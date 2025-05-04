@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Expense Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --primary-color: #1a73e8;
+      --background-color: #f4f6f9;
+      --card-color: #ffffff;
+      --text-color: #020202;
+      --border-color: #dcdfe6;
+      --hover-bg: #155ab6;
+      --shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+    }
+
+    body.dark-mode {
+      --primary-color: #4f9aff;
+      --background-color: #121212;
+      --card-color: #1e1e1e;
+      --text-color: #ffffff; /* Set text color to white in dark mode */
+      --border-color: #444;
+      --hover-bg: #3a8cf5;
+      --shadow: 0 8px 16px rgba(255, 255, 255, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--background-color);
+      color: var(--text-color);
+      padding: 40px 20px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--card-color);
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .dark-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+    .switch {
+      width: 50px;
+      height: 28px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .switch input {
+      display: none;
+    }
+
+    .slider {
+      position: absolute;
+      background-color: #ccc;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 34px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .slider:before {
+      content: "";
+      position: absolute;
+      height: 20px;
+      width: 20px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+
+    input:checked + .slider {
+      background-color: var(--primary-color);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(22px);
+    }
+
+    h2 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+    }
+
+    p {
+      font-size: 18px;
+      margin-bottom: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+
+    th, td {
+      padding: 14px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    a {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 18px;
+      background-color: var(--primary-color);
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      transition: background 0.3s;
+      font-weight: 600;
+    }
+
+    a:hover {
+      background-color: var(--hover-bg);
+    }
+
+    canvas {
+      max-width: 100%;
+      margin-top: 20px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+
+      th, td {
+        font-size: 14px;
+        padding: 10px;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      p {
+        font-size: 16px;
+      }
+
+      a {
+        padding: 10px 16px;
+        font-size: 14px;
+      }
+
+      .delete-btn {
+        font-size: 14px;
+      }
+
+      .dark-toggle {
+        top: 10px;
+        right: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h2 {
+        font-size: 20px;
+      }
+
+      p {
+        font-size: 14px;
+      }
+
+      .container {
+        padding: 15px;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      .delete-btn {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Dark Mode Toggle -->
+  <div class="dark-toggle">
+    <label class="switch">
+      <input type="checkbox" id="darkModeToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <h2>Expense Dashboard</h2>
+  <p>Predicted Next Month Spending: ₹{{ prediction }}</p>
+
+  <!-- Chart -->
+  <canvas id="spendingChart" height="100"></canvas>
+
+  <!-- Table -->
+  <table>
+    <tr><th>Date</th><th>Description</th><th>Amount</th><th>Category</th><th>Action</th></tr>
+    {% for exp in expenses %}
+    <tr>
+      <td>{{ exp.date }}</td>
+      <td>{{ exp.description }}</td>
+      <td>₹{{ exp.amount }}</td>
+      <td>{{ exp.category }}</td>
+      <td>
+        <!-- Delete icon (trash can) -->
+        <td>
+          <!-- Delete button (trash can) with the correct URL -->
+          <a href="{% url 'delete_expense' exp.id %}" class="delete-btn" data-id="{{ exp.id }}">
+            <i class="fas fa-trash-alt"></i> Delete
+          </a>
+        </td>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <a href="/add/">Add Expense</a>
+</div>
+
+<!-- Dark Mode Script + Chart -->
+<script>
+  const toggle = document.getElementById('darkModeToggle');
+  const body = document.body;
+  const ctx = document.getElementById('spendingChart').getContext('2d'); // Initialize ctx
+
+  // Persist dark mode preference
+  if (localStorage.getItem('theme') === 'dark') {
+    body.classList.add('dark-mode');
+    toggle.checked = true;
+  }
+
+  toggle.addEventListener('change', () => {
+    body.classList.toggle('dark-mode');
+    localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
+    updateChartColors();  // Update chart colors when theme changes
+  });
+
+  // Function to update chart colors dynamically based on theme
+  function updateChartColors() {
+    const isDarkMode = body.classList.contains('dark-mode');
+
+    // Update chart scales and legend labels based on the current theme
+    spendingChart.options.plugins.legend.labels.color = isDarkMode ? '#ffffff' : '#1f1f1f';
+    spendingChart.options.scales.x.ticks.color = isDarkMode ? '#ffffff' : '#1f1f1f';
+    spendingChart.options.scales.y.ticks.color = isDarkMode ? '#ffffff' : '#1f1f1f';  // Update Y-axis ticks
+    spendingChart.options.scales.y.grid.color = isDarkMode ? '#333' : '#eee';  // Update Y-axis grid line color
+    spendingChart.update();  // Apply the changes to the chart
+  }
+
+  // Chart.js Setup for Bar Chart
+  const spendingChart = new Chart(ctx, {
+    type: 'bar',  // Change type to 'bar' for a bar chart
+    data: {
+      labels: ['This Month', 'Next Month'],  // Data labels for the x-axis
+      datasets: [{
+        label: 'Spending (₹)',
+        data: [{{ current_month_total }}, {{ prediction }}],  // Data points for the bars
+        backgroundColor: 'rgba(0, 255, 0, 0.6)',  // Green color for the bars
+        borderColor: 'rgba(0, 255, 0, 1)',  // Darker green border color for the bars
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,  // Makes the chart responsive
+      plugins: {
+        legend: {
+          labels: {
+            color: body.classList.contains('dark-mode') ? '#ffffff' : '#1f1f1f'  // White text in dark mode
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: body.classList.contains('dark-mode') ? '#ffffff' : '#1f1f1f'  // White ticks in dark mode
+          },
+          grid: {
+            color: 'transparent'
+          }
+        },
+        y: {
+          ticks: {
+            color: body.classList.contains('dark-mode') ? '#ffffff' : '#1f1f1f'  // White ticks in dark mode
+          },
+          grid: {
+            color: body.classList.contains('dark-mode') ? '#333' : '#eee'
+          }
+        }
+      }
+    }
+  });
+
+  // Update chart colors on initial load
+  updateChartColors();
+</script>
+
+</body>
+</html>

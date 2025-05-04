@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add New Expense</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-color: #1a73e8;
+      --background-color: #f4f6f9;
+      --card-color: #ffffff;
+      --text-color: #1f1f1f;
+      --input-bg: #fdfdfd;
+      --border-color: #dcdfe6;
+      --shadow: 0 12px 24px rgba(0,0,0,0.05);
+      --transition: 0.3s ease;
+      --hover-bg: #155ab6;
+    }
+
+    body.dark-mode {
+      --primary-color: #4f9aff;
+      --background-color: #121212;
+      --card-color: #1e1e1e;
+      --text-color: #f0f0f0;
+      --input-bg: #2a2a2a;
+      --border-color: #444;
+      --shadow: 0 12px 24px rgba(255,255,255,0.05);
+      --hover-bg: #3a8cf5;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      transition: background-color var(--transition), color var(--transition);
+    }
+
+    .form-container {
+      position: relative;
+      background: var(--card-color);
+      box-shadow: var(--shadow);
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 520px;
+      animation: slideFade 0.8s ease;
+      transition: background var(--transition), color var(--transition), box-shadow var(--transition);
+    }
+
+    @keyframes slideFade {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .dark-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+    .switch {
+      display: inline-block;
+      width: 50px;
+      height: 28px;
+      position: relative;
+    }
+
+    .switch input {
+      display: none;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      background-color: #ccc;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 34px;
+      transition: background-color var(--transition);
+    }
+
+    .slider:before {
+      content: "";
+      position: absolute;
+      height: 20px;
+      width: 20px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      border-radius: 50%;
+      transition: transform var(--transition);
+    }
+
+    .switch input:checked + .slider {
+      background-color: var(--primary-color);
+    }
+
+    .switch input:checked + .slider:before {
+      transform: translateX(22px);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 26px;
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    form p {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    form p label {
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+      padding: 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      transition: border-color var(--transition), background-color var(--transition);
+      font-size: 15px;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      background: #000000;
+    }
+
+    button[type="submit"] {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color var(--transition), transform 0.2s ease;
+    }
+
+    button[type="submit"]:hover {
+      background-color: var(--hover-bg);
+      transform: translateY(-2px);
+    }
+
+    button[type="submit"]:active {
+      transform: scale(0.98);
+    }
+
+    @media (max-width: 600px) {
+      .form-container {
+        padding: 30px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="form-container">
+  <div class="dark-toggle">
+    <label class="switch">
+      <input type="checkbox" id="darkModeToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <h2>Add New Expense</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit</button>
+  </form>
+</div>
+
+<script>
+  const toggle = document.getElementById('darkModeToggle');
+  const body = document.body;
+
+  // Load theme preference
+  if (localStorage.getItem('theme') === 'dark') {
+    body.classList.add('dark-mode');
+    toggle.checked = true;
+  }
+
+  toggle.addEventListener('change', () => {
+    body.classList.toggle('dark-mode');
+    localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
+  });
+</script>
+
+</body>
+</html>
